@@ -1,0 +1,130 @@
+columns_with_value_index: {
+  DEPT_DEL_15: {
+    1: [1, 4, 6, 7, 10, 14, 17, 20, 21],
+    0: [0, 2, 3, 5, 8, 9, 11, 12, 13],
+  }
+
+  MONTH: {
+    1: [1, 5, 7, 14, 20, 23],
+    2: [0, 2, 6, 17, 21],
+  }
+
+  CARRIER_NAME: {
+    'American Airlines': [1, 5, 14, 23],
+    'Delta': [0, 2, 6, 21]
+  }
+}
+
+example_column_data {
+  7.0 <class 'float'>
+  7.0 <class 'float'>
+  0.0 <class 'float'>
+  1500-1559 <class 'str'>
+  3.0 <class 'float'>
+  3.0 <class 'float'>
+  26.0 <class 'float'>
+  160.0 <class 'float'>
+  American Airlines Inc. <class 'str'>
+  19534.0 <class 'float'>
+  79247.0 <class 'float'>
+  7972.0 <class 'float'>
+  2006675.0 <class 'float'>
+  11744595.0 <class 'float'>
+  9.82082928995461e-05 <class 'float'>
+  0.00017728721959309724 <class 'float'>
+  6.0 <class 'float'>
+  Douglas Municipal <class 'str'>
+  35.219 <class 'float'>
+  -80.936 <class 'float'>
+  Chicago OHare International <class 'str'>
+  0.0 <class 'float'>
+  0.0 <class 'float'>
+  0.0 <class 'float'>
+  95.0 <class 'float'>
+  4.25 <class 'float'>
+  0.2377091471954006 <class 'float'>
+  0.2732357375614027 <class 'float'>
+  0.22253848170480506 <class 'float'>
+  0.25547875927174646 <class 'float'>
+}
+
+column_with_value_data_type {
+  MONTH <class 'float'>
+  DAY_OF_WEEK <class 'float'>
+  DEP_DEL15 <class 'float'>
+  DEP_TIME_BLK <class 'float'>
+  DISTANCE_GROUP <class 'float'>
+  SEGMENT_NUMBER <class 'float'>
+  CONCURRENT_FLIGHTS <class 'float'>
+  NUMBER_OF_SEATS <class 'float'>
+  CARRIER_NAME <class 'str'>
+  AIRPORT_FLIGHTS_MONTH <class 'float'>
+  AIRLINE_FLIGHTS_MONTH <class 'float'>
+  AIRLINE_AIRPORT_FLIGHTS_MONTH <class 'float'>
+  AVG_MONTHLY_PASS_AIRPORT <class 'float'>
+  AVG_MONTHLY_PASS_AIRLINE <class 'float'>
+  FLT_ATTENDANTS_PER_PASS <class 'float'>
+  GROUND_SERV_PER_PASS <class 'float'>
+  PLANE_AGE <class 'float'>
+  DEPARTING_AIRPORT <class 'str'>
+  LATITUDE <class 'float'>
+  LONGITUDE <class 'float'>
+  PREVIOUS_AIRPORT <class 'str'>
+  PRCP <class 'float'>
+  SNOW <class 'float'>
+  SNWD <class 'float'>
+  TMAX <class 'float'>
+  AWND <class 'float'>
+  CARRIER_HISTORICAL <class 'float'>
+  DEP_AIRPORT_HIST <class 'float'>
+  DAY_HISTORICAL <class 'float'>
+  DEP_BLOCK_HIST <class 'float'>
+}
+
+
+-- DATA ANALYSIS --
+
+Questions:
+-> <query-string>
+
+How many airlines are included in the data set? 
+-> count: < unique:CARRIER_NAME
+
+Print the first 5 in alphabetical order.
+-> project: < first:5 < sort:inherit < unique:CARRIER_NAME
+
+How many departing airports are included in the data set?
+-> count: < unique:DEPARTING_AIRPORT
+
+Print the last 5 in alphabetical order.
+-> last:5 < sort:inherit < unique:DEPARTING_AIRPORT
+
+What airline has the oldest plane?
+-> show:CARRIER_NAME, PLANE_AGE < max:PLANE_AGE
+
+What was the greatest delay ever recorded? Print the airline and airpots of this event.
+-> show: CARRIER_NAME, DEPARTING_AIRPORT, PREVIOUS_AIRPORT, DEP_TIME_BLK < max:DEP_TIME_BLK
+
+What was the smallest delay ever recorded? print the airline and airports of this event.
+-> show: CARRIER_NAME, DEPARTING_AIRPORT, PREVIOUS_AIRPORT, DEP_TIME_BLK < min:DEP_TIME_BLK
+
+What was the month of the year in 2019 with most delays overall? And how many delays were recorded in that month?
+-> show: < max: < group by:MONTH, count(DEP_DEL15) < search: MONTH where DEP_DEL15 = 1
+
+What was the day of the year in 2019 with most delays overall? And how many delays were recorded in that day?
+-> min: < group by: DAY, COUNT(delays) < search: DAY where DEP_DEL15 = 1
+
+What airline carrier experience the most delays in January, July and December
+-> show: < max: < group by: CARRIER_NAME, count(DEP_DEL15) < search: MONTH where MONTH = 1 OR MONTH = 7 OR MONTH = 12
+
+What was the average plane age of all planes with delays operated by American Airlines inc.
+-> show: < max: < group by:CARRIER_NAME, avg(PLANE_AGE) < search: MONTH where CARRIER_NAME = American Airlines Inc.
+
+What are the 5 airports (Deaprting Airpots) that had the most delays in 2019? Print the airports and the number of delays
+-> show: < first:5 < group by:DEPARTING_AIRPORT, count(DEP_DEL15)
+
+show: < search: MONTH where MONTH = 1
+
+NOTE: Currently not supported for parsing '>'
+How many planes were delayed for more than 15 minutes during days with "heavy snow" (Days when the inches of snow on ground were 15 or more) )?
+count: < search:PLANE_AGE where DEP_DEL15 = 1 AND SNW > 15
