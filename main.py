@@ -1,4 +1,5 @@
 import re
+import os
 import sys
 import time
 import math          # For getting ceil of number only.
@@ -58,68 +59,182 @@ def columnChecker(column, columns_with_value):
 # DATA PROCESSOR
 # -----------------------------------------------------------------------------
 
+# Indexes indexes checks if the value is already in the idx, if not it will
+# create an np array where it can store them.
+def data_indexer(idx, column, value, columns_with_value_index):
+    if value not in columns_with_value_index[column]:
+        columns_with_value_index[column][value] = []
+
+    # line_index - 1 since we do not include the header and 
+    # array, starts at idx 0. 
+    columns_with_value_index[column][value].append(idx - 1)
+
 # Process csv and store data with or without indexing to a dictionary. 
 def data_processor(columns_with_value, columns_with_value_index):
     print('\nProcessing data...')   # Indicate that data is loading.
 
     start = time.time()
-    with open('./data.csv') as fp:
-        line = fp.readline()
-        line_index = 0
 
-        while line:
-            line = line.replace('\n', '')
-            cols = line.split(',')
+    file_name = "data.csv"
 
-            # # Get header and break them to column names.
-            if line_index == 0:
-                for col in cols:
-                    columns_with_value[col] = []
-                    columns_with_value_index[col] = {}
+    print(f'File Size is {os.stat(file_name).st_size / (1024 * 1024)} MB')
 
-            else: 
-                idx = 0
-                # Append each value to their columns.
-                for key in columns_with_value:
-                    value = cols[idx]
+    txt_file = open(file_name)
 
-                    # Clean up data.
-                    value = re.sub(f'[^a-zA-Z0-9\s\.\-]', '', value)
-                    
-                    # Special case for getting block time.
-                    if key == 'DEP_TIME_BLK':
-                        duration = value.split('-')
-                        value = int(duration[1]) - int(duration[0])
+    line_index = 0
+    for line in txt_file:
 
-                    # Convert string to float for columns that contains 
-                    # int or float values.
-                    try:
-                        value = float(value)
-                    except ValueError:
-                        value = value
+        # Clean out each row.
+        # TODO(etagaca): Optimize this replace function.
+        line = line.replace('\n', '')
+        line = re.sub(f'[^a-zA-Z0-9\s\.\-,_]', '', line)
 
-                    columns_with_value[key].append(value)
+        cols = line.split(',')
 
-                    if value not in columns_with_value_index[key]:
-                        columns_with_value_index[key][value] = np.array([])
-                    
-                    # Saved to a temp variable for line wrapping.
-                    cols_temp = columns_with_value_index[key][value]
+        # print(cols)
+        if line_index == 100000:
+            print('Still processing')
 
-                    # line_index - 1 since we do not include the header and 
-                    # array, starts at idx 0. 
-                    columns_with_value_index[key][value] = np.append(cols_temp, 
-                                                                line_index - 1)
+        # print(cols)
 
-                    idx += 1
+        # Get header and break them to column names.
+        if line_index == 0:
+            for col in cols:
+                columns_with_value[col] = []
+                columns_with_value_index[col] = {}
 
-            line = fp.readline()
-            line_index += 1
-    fp.close()
+        else:
+            try:
+                [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10] = cols[:10]
+                [v11, v12, v13, v14, v15, v16, v17, v18, v19, v20] = cols[10:20]
+                [v21, v22, v23, v24, v25, v26, v27, v28, v29, v30] = cols[20:]
+            except:
+                continue
+
+            duration = v4.split('-')
+            v4 = float(duration[1]) - float(duration[0])
+
+            # Start storing values per column. Hardcoded since looping would
+            # significantly increase time complexity.
+            columns_with_value['MONTH'].append(float(v1))
+            columns_with_value['DAY_OF_WEEK'].append(float(v2))
+            columns_with_value['DEP_DEL15'].append(float(v3))
+            columns_with_value['DEP_TIME_BLK'].append(v4)
+
+            columns_with_value['DISTANCE_GROUP'].append(float(v5))
+            columns_with_value['SEGMENT_NUMBER'].append(float(v6))
+            columns_with_value['CONCURRENT_FLIGHTS'].append(float(v7))
+            columns_with_value['NUMBER_OF_SEATS'].append(float(v8))
+            columns_with_value['CARRIER_NAME'].append(v9)
+
+            columns_with_value['AIRPORT_FLIGHTS_MONTH'].append(float(v10))
+            columns_with_value['AIRLINE_FLIGHTS_MONTH'].append(float(v11))
+            columns_with_value['AIRLINE_AIRPORT_FLIGHTS_MONTH'].append(float(v12))
+            columns_with_value['AVG_MONTHLY_PASS_AIRPORT'].append(float(v13))
+            columns_with_value['AVG_MONTHLY_PASS_AIRLINE'].append(float(v14))
+
+            columns_with_value['FLT_ATTENDANTS_PER_PASS'].append(float(v15))
+            columns_with_value['GROUND_SERV_PER_PASS'].append(float(v16))
+            columns_with_value['PLANE_AGE'].append(float(v17))
+            columns_with_value['DEPARTING_AIRPORT'].append(v18)
+            columns_with_value['LATITUDE'].append(float(v19))
+
+            columns_with_value['LONGITUDE'].append(float(v20))
+            columns_with_value['PREVIOUS_AIRPORT'].append(v21)
+            columns_with_value['PRCP'].append(float(v22))
+            columns_with_value['SNOW'].append(float(v23))
+            columns_with_value['SNWD'].append(float(v24))
+
+            columns_with_value['TMAX'].append(float(v25))
+            columns_with_value['AWND'].append(float(v26))
+            columns_with_value['CARRIER_HISTORICAL'].append(float(v27))
+            columns_with_value['DEP_AIRPORT_HIST'].append(float(v28))
+            columns_with_value['DAY_HISTORICAL'].append(float(v29))
+            columns_with_value['DEP_BLOCK_HIST'].append(float(v30))
+
+            # TODO(etagaca): Implement line wrapping.
+            # Start indexing indexes for fast search.
+            data_indexer(line_index, 'MONTH', float(v1), columns_with_value_index)
+            data_indexer(line_index, 'DAY_OF_WEEK', float(v2), columns_with_value_index)
+            data_indexer(line_index, 'DEP_DEL15', float(v3), columns_with_value_index)
+            data_indexer(line_index, 'DEP_TIME_BLK', v4, columns_with_value_index)
+            data_indexer(line_index, 'DISTANCE_GROUP', float(v5), columns_with_value_index)
+
+            data_indexer(line_index, 'SEGMENT_NUMBER', float(v6), columns_with_value_index)
+            data_indexer(line_index, 'CONCURRENT_FLIGHTS', float(v7), columns_with_value_index)
+            data_indexer(line_index, 'NUMBER_OF_SEATS', float(v8), columns_with_value_index)
+            data_indexer(line_index, 'CARRIER_NAME', v9, columns_with_value_index)
+            data_indexer(line_index, 'AIRPORT_FLIGHTS_MONTH', float(v10), columns_with_value_index)
+
+            data_indexer(line_index, 'AIRLINE_FLIGHTS_MONTH', float(v11), columns_with_value_index)
+            data_indexer(line_index, 'AIRLINE_AIRPORT_FLIGHTS_MONTH', float(v12), columns_with_value_index)
+            data_indexer(line_index, 'AVG_MONTHLY_PASS_AIRPORT', float(v13), columns_with_value_index)
+            data_indexer(line_index, 'AVG_MONTHLY_PASS_AIRLINE', float(v14), columns_with_value_index)
+            data_indexer(line_index, 'FLT_ATTENDANTS_PER_PASS', float(v15), columns_with_value_index)
+
+            data_indexer(line_index, 'GROUND_SERV_PER_PASS', float(v16), columns_with_value_index)
+            data_indexer(line_index, 'PLANE_AGE', float(v17), columns_with_value_index)
+            data_indexer(line_index, 'DEPARTING_AIRPORT', v18, columns_with_value_index)
+            data_indexer(line_index, 'LATITUDE', float(v19), columns_with_value_index)
+            data_indexer(line_index, 'LONGITUDE', float(v20), columns_with_value_index)
+
+            data_indexer(line_index, 'PREVIOUS_AIRPORT', v21, columns_with_value_index)
+            data_indexer(line_index, 'PRCP', float(v22), columns_with_value_index)
+            data_indexer(line_index, 'SNOW', float(v23), columns_with_value_index)
+            data_indexer(line_index, 'SNWD', float(v24), columns_with_value_index)
+            data_indexer(line_index, 'TMAX', float(v25), columns_with_value_index)
+
+            data_indexer(line_index, 'AWND', v26, columns_with_value_index)
+            data_indexer(line_index, 'CARRIER_HISTORICAL', float(v27), columns_with_value_index)
+            data_indexer(line_index, 'DEP_AIRPORT_HIST', float(v28), columns_with_value_index)
+            data_indexer(line_index, 'DAY_HISTORICAL', float(v29), columns_with_value_index)
+            data_indexer(line_index, 'DEP_BLOCK_HIST', float(v30), columns_with_value_index)
+
+            # Append each value to their columns.
+            """
+            for key in columns_with_value:
+                value = cols[idx]
+
+                # Clean up data.
+                value = re.sub(f'[^a-zA-Z0-9\s\.\-]', '', value)
+                
+                # Special case for getting block time.
+                if key == 'DEP_TIME_BLK':
+                    duration = value.split('-')
+                    value = int(duration[1]) - int(duration[0])
+
+                # Convert string to float for columns that contains 
+                # int or float values.
+                try:
+                    value = float(value)
+                except ValueError:
+                    value = value
+
+                columns_with_value[key].append(value)
+
+                # Indexing happens here.
+                if value not in columns_with_value_index[key]:
+                    columns_with_value_index[key][value] = np.array([])
+                
+                # Saved to a temp variable for line wrapping.
+                cols_temp = columns_with_value_index[key][value]
+
+                # line_index - 1 since we do not include the header and 
+                # array, starts at idx 0. 
+                columns_with_value_index[key][value] = np.append(cols_temp, 
+                                                            line_index - 1)
+
+                idx += 1
+            """
+
+        line_index += 1
+    txt_file.close()
 
     # map_col_to_ids(columns_with_value, columns_to_id_mapping)
     elapse = time.time() - start
     print(f'\nFile loaded successfully! Time to load {elapse} sec.')
+    print(f'Columns with value index', len(columns_with_value_index['MONTH']))
+
 
 # Maps column names to their ids.
 # Example: 
@@ -215,7 +330,7 @@ def project(columns_to_show, columns_with_value, values = []):
 
 # -----------------------------------------------------------------------------
 # DATABASE OPERATIONS
-# -----------------------------------------------------------------------------
+# -------------------------------------------------------------z----------------
 
 # Count distinct values in a column selected by the user.
 def distinct(columns_with_value, column):
@@ -246,12 +361,11 @@ def drop_column(columns_with_value, columns_to_id_mapping):
 # be used to display rows and cols_with_val_idx is used to search for rows by 
 # conditions to enable fast query.
 def select(query_str, cols_with_value, cols_with_val_idx):
-    # TODO(etagaca): Error handling when query is not parsable.
     try:
         [column, condition] = query_str.split('where')
         column = column.strip()
     except:
-        print(f'Select query cannot be parsed.')
+        print(f'Select query cannot be parsed')
 
     # Error handling: Checks for column validity.
     if not columnChecker(column, cols_with_value):
@@ -268,7 +382,6 @@ def select(query_str, cols_with_value, cols_with_val_idx):
     entries = parse_condition(condition)
 
     try:
-        # TODO(etagaca): Implement a try catch block here.
         for entry in entries:
             # Check for 'AND' condition entries.
             if len(entry) < 2:
@@ -349,7 +462,12 @@ def unique(column, columns_with_value):
 
 # [Pass by reference] Sorts given set/data.
 def sort(data):
-    return sorted(data)
+    try:
+        return sorted(data)
+    except:
+        # Convert every value to a string to be sorted.
+        data = [str(x) for x in data]
+        return sorted(data)
 
 # Returns first N numbers within result list.
 # NOTE: Can be a list of idxs or values.

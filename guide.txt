@@ -97,7 +97,7 @@ How many departing airports are included in the data set?
 -> count: < unique:DEPARTING_AIRPORT
 
 Print the last 5 in alphabetical order.
--> last:5 < sort:inherit < unique:DEPARTING_AIRPORT
+-> project: < last:5 < sort: < unique:DEPARTING_AIRPORT
 
 What airline has the oldest plane?
 -> show:CARRIER_NAME, PLANE_AGE < max:PLANE_AGE
@@ -112,7 +112,7 @@ What was the month of the year in 2019 with most delays overall? And how many de
 -> show: < max: < group by:MONTH, count(DEP_DEL15) < search: MONTH where DEP_DEL15 = 1
 
 What was the day of the year in 2019 with most delays overall? And how many delays were recorded in that day?
--> min: < group by: DAY, COUNT(delays) < search: DAY where DEP_DEL15 = 1
+-> show: < max: < group by:DAY_OF_WEEK, count(DEP_DEL15) < search: DAY_OF_WEEK where DEP_DEL15 = 1
 
 What airline carrier experience the most delays in January, July and December
 -> show: < max: < group by: CARRIER_NAME, count(DEP_DEL15) < search: MONTH where MONTH = 1 OR MONTH = 7 OR MONTH = 12
