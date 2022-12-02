@@ -87,44 +87,40 @@ column_with_value_data_type {
 Questions:
 -> <query-string>
 
-How many airlines are included in the data set? 
+1. How many airlines are included in the data set? Print the first 5 in alphabetical order.
 -> count: < unique:CARRIER_NAME
-
-Print the first 5 in alphabetical order.
 -> project: < first:5 < sort:inherit < unique:CARRIER_NAME
 
-How many departing airports are included in the data set?
+2. How many departing airports are included in the data set? Print the last 5 in alphabetical order.
 -> count: < unique:DEPARTING_AIRPORT
-
-Print the last 5 in alphabetical order.
 -> project: < last:5 < sort: < unique:DEPARTING_AIRPORT
 
-What airline has the oldest plane?
+3. What airline has the oldest plane? Print the 5 airlines that have the 5 oldest planes recorded.
 -> show:CARRIER_NAME, PLANE_AGE < max:PLANE_AGE
+-> show: < first:5 < sort reverse: < group by:CARRIER_NAME, max(PLANE_AGE)
 
-What was the greatest delay ever recorded? Print the airline and airpots of this event.
--> show: CARRIER_NAME, DEPARTING_AIRPORT, PREVIOUS_AIRPORT, DEP_TIME_BLK < max:DEP_TIME_BLK
+4. What is the airport that averaged the greatest number of passengers recorded in 2019? Print the 5 airport that averaged the greatest number of passengers in 2019.
+-> show: < max: < group by:DEPARTING_AIRPORT, avg(AVG_MONTHLY_PASS_AIRPORT)
+-> show: < first:5 < sort reverse: < group by:DEPARTING_AIRPORT, avg(AVG_MONTHLY_PASS_AIRPORT)
 
-What was the smallest delay ever recorded? print the airline and airports of this event.
--> show: CARRIER_NAME, DEPARTING_AIRPORT, PREVIOUS_AIRPORT, DEP_TIME_BLK < min:DEP_TIME_BLK
+5. What is the airline that averaged the greatest number of employees (Flight attendants and ground service) in 2019? Print the 5 airlines that averaged the greatest number of employees in 2019.
+-> show: < max: < group by:CARRIER_NAME, avg(FLT_ATTENDANTS_PER_PASS + GROUND_SERV_PER_PASS)
+-> show: < first:5 < sort reverse: < group by:CARRIER_NAME, avg(FLT_ATTENDANTS_PER_PASS + GROUND_SERV_PER_PASS)
 
-What was the month of the year in 2019 with most delays overall? And how many delays were recorded in that month?
+6. What was the month of the year in 2019 with most delays overall? And how many delays were recorded in that month?
 -> show: < max: < group by:MONTH, count(DEP_DEL15) < search: MONTH where DEP_DEL15 = 1
 
-What was the day of the year in 2019 with most delays overall? And how many delays were recorded in that day?
+7. What was the day of the year in 2019 with most delays overall? And how many delays were recorded in that day?
 -> show: < max: < group by:DAY_OF_WEEK, count(DEP_DEL15) < search: DAY_OF_WEEK where DEP_DEL15 = 1
 
-What airline carrier experience the most delays in January, July and December
--> show: < max: < group by: CARRIER_NAME, count(DEP_DEL15) < search: MONTH where MONTH = 1 OR MONTH = 7 OR MONTH = 12
+8. What airline carrier experience the most delays in January, July and December
+-> show: < max: < group by:CARRIER_NAME, count(DEP_DEL15) < search: MONTH where DEP_DEL15 = 1 AND MONTH = 1 OR MONTH = 7 OR MONTH = 12
 
-What was the average plane age of all planes with delays operated by American Airlines inc.
--> show: < max: < group by:CARRIER_NAME, avg(PLANE_AGE) < search: MONTH where CARRIER_NAME = American Airlines Inc.
+9. What was the average plane age of all planes with delays operated by American Airlines inc.
+-> show: < max: < group by:CARRIER_NAME, avg(PLANE_AGE) < search: MONTH where CARRIER_NAME = American Airlines Inc. AND DEP_DEL15 = 1
 
-What are the 5 airports (Deaprting Airpots) that had the most delays in 2019? Print the airports and the number of delays
--> show: < first:5 < group by:DEPARTING_AIRPORT, count(DEP_DEL15)
+10. How many planes were delayed for more than 15 minutes during days with "heavy snow" (Days when the inches of snow on ground were 15 or more) )?
+-> count: < search:DEP_DEL15 where DEP_DEL15 = 1 AND SNWD = 1
 
-show: < search: MONTH where MONTH = 1
-
-NOTE: Currently not supported for parsing '>'
-How many planes were delayed for more than 15 minutes during days with "heavy snow" (Days when the inches of snow on ground were 15 or more) )?
-count: < search:PLANE_AGE where DEP_DEL15 = 1 AND SNW > 15
+11. What are the 5 airports (Departing Airports) that had the most delays in 2019? Print the airports and the number of delays
+-> show: < first:5 < sort reverse: < group by:DEPARTING_AIRPORT, count(DEP_DEL15) < search: DEP_DEL15 where DEP_DEL15 = 1
