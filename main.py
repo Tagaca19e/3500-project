@@ -69,7 +69,7 @@ def data_processor(columns_with_value, columns_with_value_index):
 
     print(f'[{time.time()}]: {file_name}')
 
-    if file_name != 'data.csv':
+    if file_name != 'data2.csv':
         print(f'Please enter valid csv file')
         return
 
@@ -100,7 +100,7 @@ def data_processor(columns_with_value, columns_with_value_index):
             try:
                 [v1, v2, v3, v4, v5, v6, v7, v8, v9, v10] = cols[:10]
                 [v11, v12, v13, v14, v15, v16, v17, v18, v19, v20] = cols[10:20]
-                [v21, v22, v23, v24, v25, v26, v27, v28, v29, v30] = cols[20:]
+                [v21, v22, v23, v24, v25, v26] = cols[20:]
             except:
                 continue
             
@@ -130,10 +130,6 @@ def data_processor(columns_with_value, columns_with_value_index):
             v24 = float(v24)
             v25 = float(v25)
             v26 = float(v26)
-            v27 = float(v27)
-            v28 = float(v28)
-            v29 = float(v29)
-            v30 = float(v30) 
 
             # Get start time and end time for 'DEP_TIME_BLK' and subtract
             # end and start to get time duration. 
@@ -173,10 +169,6 @@ def data_processor(columns_with_value, columns_with_value_index):
 
             columns_with_value['TMAX'].append(v25)
             columns_with_value['AWND'].append(v26)
-            columns_with_value['CARRIER_HISTORICAL'].append(v27)
-            columns_with_value['DEP_AIRPORT_HIST'].append(v28)
-            columns_with_value['DAY_HISTORICAL'].append(v29)
-            columns_with_value['DEP_BLOCK_HIST'].append(v30)
 
             # Start indexing indexes for fast search. Looks ugly but is
             # an essential part of making program efficient.
@@ -228,14 +220,6 @@ def data_processor(columns_with_value, columns_with_value_index):
             data_indexer(line_index, 'TMAX', v25, columns_with_value_index)
 
             data_indexer(line_index, 'AWND', v26, columns_with_value_index)
-            data_indexer(line_index, 'CARRIER_HISTORICAL', v27, 
-                                                    columns_with_value_index)
-            data_indexer(line_index, 'DEP_AIRPORT_HIST', v28, 
-                                                    columns_with_value_index)
-            data_indexer(line_index, 'DAY_HISTORICAL', v29, 
-                                                    columns_with_value_index)
-            data_indexer(line_index, 'DEP_BLOCK_HIST', v30, 
-                                                    columns_with_value_index)
 
             line_index += 1
     f.close()
@@ -804,7 +788,10 @@ def data_analysis(columns_with_value, columns_with_value_index,
                                                         columns_to_id_mapping):
     print('\nData Analysis:\n**************')
     inp = input(f'{time.time()}: ')
-    chained_query(inp, columns_with_value, columns_with_value_index)
+    try:
+        chained_query(inp, columns_with_value, columns_with_value_index)
+    except:
+        print('[WARNING]: Chained query failed :(')
     return
 
 def explore_data_menu(columns_with_value, columns_with_value_index, 
